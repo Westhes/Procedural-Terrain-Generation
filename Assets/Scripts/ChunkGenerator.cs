@@ -33,14 +33,17 @@ public class ChunkGenerator : MonoBehaviour
         new Vector3(0.5f, 0.5f, -0.5f), // 7
     };
 
+    [HideInInspector]
     /// <summary>
     /// X axis
     /// </summary>
     public int width;
+    [HideInInspector]
     /// <summary>
     /// Y axis
     /// </summary>
     public int height;
+    [HideInInspector]
     /// <summary>
     /// Z axis
     /// </summary>
@@ -258,64 +261,7 @@ public class ChunkGenerator : MonoBehaviour
                     // Check the neighbors
                     else
                     {
-                        // Avoid corners
-                        if (x + y == -2 || x + y == width + height || x + y == height - 1 ||
-                            x + z == -2 || x + z == width + height || x + z == height - 1 ||
-                            y + z == -2 || y + z == width + height || y + z == height - 1) continue;
-                     
-                        ChunkGenerator chunk;
-                        if (x < 0)
-                        {
-                            if (y == height || z == depth) continue;
-                            chunk = neighborChunks[0];
-                            if (chunk == null) continue;
-                            var neighborTile = chunk.tileArray[width - 1, y, z];
-                            var ownTile = tileArray[0, y, z];
-                            
-                            if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(TileType.Grass, Direction.right, x, ownTile.y, ownTile.z);
-                        }
-                        else if (x >= width)
-                        {
-                            chunk = neighborChunks[1];
-                            if (chunk == null) continue;
-                            var neighborTile = chunk.tileArray[0, y, z];
-                            var ownTile = tileArray[width-1, y, z];
-
-                            if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(TileType.Grass, Direction.left, x, ownTile.y, ownTile.z);
-                        }
-                        else if (y < 0)
-                        {
-                            // TODO, also expand the neigborChunks array to allow this
-                            continue;
-                        }
-                        else if (y >= height)
-                        {
-                            // See comment above.
-                            continue;
-                        }
-                        else if (z < 0)
-                        {
-                            chunk = neighborChunks[2];
-                            if (chunk == null) continue;
-
-                            var neighborTile = chunk.tileArray[x, y, depth -1];
-                            var ownTile = tileArray[x, y, 0];
-
-                            if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(TileType.Grass, Direction.front, x, y, z);
-                        }
-                        else if (z >= depth)
-                        {
-                            chunk = neighborChunks[3];
-                            if (chunk == null) continue;
-                            var neighborTile = chunk.tileArray[x, y, 0];
-                            var ownTile = tileArray[x, y, depth -1];
-
-                            if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(TileType.Grass, Direction.back, x, y, z);
-                        }
+                        ValidateNeighborChunk(x, y, z);
                     }
                 }
             }
@@ -333,14 +279,75 @@ public class ChunkGenerator : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    //void Update()
-    //{
-    //    foreach(var vert in vertices)
-    //    {
-    //        //Debug.DrawRay(vert, Vector3.up);
-    //    }
-    //}
+    private void ValidateNeighborChunk(int x, int y, int z)
+    {
+        // Avoid corners
+        if (x + y == -2 || x + y == width + height || x + y == height - 1 ||
+            x + z == -2 || x + z == width + height || x + z == height - 1 ||
+            y + z == -2 || y + z == width + height || y + z == height - 1) return;
+        
+        int neighborX = x;
+        int neighborY = y;
+        int neighborZ = z;
+        int ownX = x;
+        int ownY = y;
+        int ownZ = z;
+        bool bypass = false;
+        ChunkGenerator chunk = null;
+        Direction dir = Direction.left;
+        if (x < 0)
+        {
+            if (y == height || z == depth) return;
+            chunk = neighborChunks[0];
+            neighborX = width -1;
+            ownX = 0;
+            dir = Direction.right;
+        }
+        else if (x >= width)
+        {
+            chunk = neighborChunks[1];
+            neighborX = 0;
+            ownX = width - 1;
+
+            dir = Direction.left;
+        }
+        else if (y < 0)
+        {
+            // TODO, also expand the neigborChunks array to allow this
+            //dir = Direction.down;
+            //DrawTileSurface(TileType.Grass, dir, x, y, z);
+            return;
+        }
+        else if (y >= height)
+        {
+            // See comment above.
+            //dir = Direction.up;
+            //DrawTileSurface(TileType.Grass, dir, x, y, z);
+
+            return;
+        }
+        else if (z < 0)
+        {
+            chunk = neighborChunks[2];
+            neighborZ = depth - 1;
+            ownZ = 0;
+            dir = Direction.front;
+        }
+        else if (z >= depth)
+        {
+            chunk = neighborChunks[3];
+            neighborZ = 0;
+            ownZ = depth - 1;
+            dir = Direction.back;
+        }
+
+        if (chunk == null) return;
+        var neighborTile = chunk.tileArray[neighborX, neighborY, neighborZ];
+        var ownTile = tileArray[ownX, ownY, ownZ];
+
+        if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
+            DrawTileSurface(ownTile.type, dir, x, y, z);
+    }
 
     public void DrawNeighbors(int x, int y, int z)
     {
