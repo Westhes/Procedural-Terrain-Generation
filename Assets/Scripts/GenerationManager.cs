@@ -46,7 +46,9 @@ public class GenerationManager : MonoBehaviour
     [Range(0.01f, 0.99999f)]
     public float modifier = 0.1f;
     public int seed = 0;
+    [Range(0,20)]
     public int octaves = 0;
+    [Range(0f, 1f)]
     public float persistance = 0f;
     public float lucanarity = 0f;
     public Vector3 offset;
@@ -69,7 +71,7 @@ public class GenerationManager : MonoBehaviour
                 chunk.width = chunkSize;
                 chunk.height = chunkSize;
                 chunk.depth = chunkSize;
-                chunk.localOffset = new Vector3(x * 1.285f, 0, y * 1.285f);
+                chunk.localOffset = new Vector3(x * (chunkSize - 1), 0, y * (chunkSize - 1));
                 //chunk.localOffset = new Vector3(x * (chunkSize -1), 0, y * (chunkSize -1));
             }
         }

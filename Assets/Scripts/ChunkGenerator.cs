@@ -138,6 +138,10 @@ public class ChunkGenerator : MonoBehaviour
                 }
             }
         }
+
+        width --; 
+        height --;
+        depth --;
     }
 
     float[,,] CreateSampleDataset()
@@ -205,13 +209,13 @@ public class ChunkGenerator : MonoBehaviour
     private void GenerateMesh()
     {
         // Height last
-        for (int y = 1; y < height -1; y++)
+        for (int y = 1; y < height; y++)
         {
             // Depth second
-            for (int z = 1; z < depth -1; z++)
+            for (int z = 1; z < depth; z++)
             {
                 // width first
-                for (int x = 1; x < width -1; x++)
+                for (int x = 1; x < width; x++)
                 {
                     var currentTile = tileArray[x, y, z];
 

@@ -1,29 +1,38 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+
+using UnityEditor;
+
 using UnityEngine;
 
+[CanEditMultipleObjects]
 public class MapGenerator : MonoBehaviour
 {
+    [Min(1)]
     public int mapWidth;
+    [Min(1)]
     public int mapHeight;
+    [Min(2f)]
     public float noiseScale;
 
-
+    [Range(1, 10)]
     public int octaves;
     [Range(0f,1f)]
     public float persistance;
+    [Min(1)]
     public float lacunarity;
 
     public int seed;
     public Vector2 offset;
 
+    private MapDisplay mapDisplay;
 
 
     public void GenerateMap()
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, noiseScale, seed, octaves, persistance, lacunarity, offset);
 
-        MapDisplay display = FindObjectOfType<MapDisplay>();
+        MapDisplay display = GetComponent<MapDisplay>();
         display.DrawNoiseMap(noiseMap);
     }
 
