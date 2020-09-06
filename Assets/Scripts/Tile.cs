@@ -6,6 +6,7 @@ public enum TileType : int
 {
     None,
     Stone,
+    Grass,
 }
 
 public struct Tile

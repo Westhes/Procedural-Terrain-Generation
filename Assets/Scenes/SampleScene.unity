@@ -169,11 +169,11 @@ MonoBehaviour:
   mapWidth: 100
   mapHeight: 100
   noiseScale: 50
-  octaves: 4
-  persistance: 0.046
+  octaves: 3
+  persistance: 0.226
   lacunarity: 13.3
   seed: 21
-  offset: {x: 0, y: -0.002}
+  offset: {x: 0, y: -2}
 --- !u!4 &22678323
 Transform:
   m_ObjectHideFlags: 0
@@ -388,8 +388,8 @@ MonoBehaviour:
   mapWidth: 100
   mapHeight: 100
   noiseScale: 50
-  octaves: 4
-  persistance: 0.046
+  octaves: 3
+  persistance: 0.226
   lacunarity: 13.3
   seed: 21
   offset: {x: 0, y: 0}
@@ -699,11 +699,11 @@ MonoBehaviour:
   mapWidth: 100
   mapHeight: 100
   noiseScale: 50
-  octaves: 4
-  persistance: 0.046
+  octaves: 3
+  persistance: 0.226
   lacunarity: 13.3
   seed: 21
-  offset: {x: 0, y: -0.004}
+  offset: {x: 0, y: -4}
 --- !u!4 &1737017604
 Transform:
   m_ObjectHideFlags: 0

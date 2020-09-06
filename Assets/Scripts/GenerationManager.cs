@@ -58,21 +58,70 @@ public class GenerationManager : MonoBehaviour
 
     [Tooltip("Not updated at runtime")]
     [Range(1, 100)]
-    public int chunks = 3;
+    public int chunkCount = 3;
+
+    private ChunkGenerator[,] chunks;
 
     private void Awake()
     {
-        for (int x = -chunks; x < chunks - 1; x++)
+        chunks = new ChunkGenerator[chunkCount, chunkCount];
+        //for (int x = -chunkCount; x < chunkCount - 1; x++)
+        //{
+        //    for (int y = -chunkCount; y < chunkCount - 1; y++)
+        //    {
+        //        var c = Instantiate(this.chunk, new Vector3(x * (chunkSize), 0, y * (chunkSize)), Quaternion.identity);
+        //        var chunk = c.GetComponent<ChunkGenerator>();
+        //        chunk.width = chunkSize;
+        //        chunk.height = chunkSize;
+        //        chunk.depth = chunkSize;
+        //        //chunk.localOffset = new Vector3(x * (chunkSize - 1), 0, y * (chunkSize - 1));
+        //        chunk.localOffset = new Vector3(x * 1.3f, 0, y * 1.3f);
+        //    }
+        //}
+        for (int x = 0; x < chunkCount; x++)
         {
-            for (int y = -chunks; y < chunks - 1; y++)
+            for (int z = 0; z < chunkCount; z++)
             {
-                var c = Instantiate(this.chunk, new Vector3(x * (chunkSize - 1), 0, y * (chunkSize - 1)), Quaternion.identity);
+                var c = Instantiate(this.chunk, new Vector3(x * (chunkSize), 0, z * (chunkSize)), Quaternion.identity);
                 var chunk = c.GetComponent<ChunkGenerator>();
                 chunk.width = chunkSize;
                 chunk.height = chunkSize;
                 chunk.depth = chunkSize;
-                chunk.localOffset = new Vector3(x * (chunkSize - 1), 0, y * (chunkSize - 1));
-                //chunk.localOffset = new Vector3(x * (chunkSize -1), 0, y * (chunkSize -1));
+                chunk.localOffset = new Vector3(x * 1.3f, 0, z * 1.3f);
+
+                chunks[x, z] = chunk;
+            }
+        }
+
+
+        for (int x = 0; x < chunkCount; x++)
+        {
+            for (int z = 0; z < chunkCount; z++)
+            {
+                // Left
+                if (x > 0)
+                    chunks[x, z].neighborChunks[0] = chunks[x - 1, z];
+                // Right
+                if (x < chunkCount - 1)
+                    chunks[x, z].neighborChunks[1] = chunks[x + 1, z];
+
+                // backward
+                if (z > 0)
+                    chunks[x, z].neighborChunks[2] = chunks[x, z - 1];
+                // forward
+                if (z < chunkCount - 1)
+                    chunks[x, z].neighborChunks[3] = chunks[x, z + 1];
+
+                // Render the chunk now that it contains all the components it needs
+                chunks[x, z].Initialize();
+            }
+        }
+
+        for (int x = 0; x < chunkCount; x++)
+        {
+            for (int z = 0; z < chunkCount; z++)
+            {
+                chunks[x, z].BakeChunk();
             }
         }
     }
