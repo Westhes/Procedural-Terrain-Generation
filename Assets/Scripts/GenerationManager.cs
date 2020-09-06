@@ -65,19 +65,8 @@ public class GenerationManager : MonoBehaviour
     private void Awake()
     {
         chunks = new ChunkGenerator[chunkCount, chunkCount];
-        //for (int x = -chunkCount; x < chunkCount - 1; x++)
-        //{
-        //    for (int y = -chunkCount; y < chunkCount - 1; y++)
-        //    {
-        //        var c = Instantiate(this.chunk, new Vector3(x * (chunkSize), 0, y * (chunkSize)), Quaternion.identity);
-        //        var chunk = c.GetComponent<ChunkGenerator>();
-        //        chunk.width = chunkSize;
-        //        chunk.height = chunkSize;
-        //        chunk.depth = chunkSize;
-        //        //chunk.localOffset = new Vector3(x * (chunkSize - 1), 0, y * (chunkSize - 1));
-        //        chunk.localOffset = new Vector3(x * 1.3f, 0, y * 1.3f);
-        //    }
-        //}
+
+        // Create objects
         for (int x = 0; x < chunkCount; x++)
         {
             for (int z = 0; z < chunkCount; z++)
@@ -93,7 +82,7 @@ public class GenerationManager : MonoBehaviour
             }
         }
 
-
+        // Prepare the chunks by assigning them neighbors, allow them to generate their own maps
         for (int x = 0; x < chunkCount; x++)
         {
             for (int z = 0; z < chunkCount; z++)
@@ -112,16 +101,17 @@ public class GenerationManager : MonoBehaviour
                 if (z < chunkCount - 1)
                     chunks[x, z].neighborChunks[3] = chunks[x, z + 1];
 
-                // Render the chunk now that it contains all the components it needs
+                // Create the 3d noisemap now that it contains all the components it needs
                 chunks[x, z].Initialize();
             }
         }
 
+        // Create the chunk, while aware of its neighbors
         for (int x = 0; x < chunkCount; x++)
         {
             for (int z = 0; z < chunkCount; z++)
             {
-                chunks[x, z].BakeChunk();
+                chunks[x, z].CreateChunk();
             }
         }
     }

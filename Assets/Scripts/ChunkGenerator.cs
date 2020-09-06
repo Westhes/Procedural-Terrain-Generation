@@ -105,8 +105,6 @@ public class ChunkGenerator : MonoBehaviour
         if (width > 0 && depth > 0 && height > 0)
             PrepareChunk();
 
-        if (isInitialized)
-            BakeChunk();
         isInitialized = true;
     }
 
@@ -119,9 +117,12 @@ public class ChunkGenerator : MonoBehaviour
         uv.Clear();
         normals.Clear();
         CreateTiles();
+
+        if (isInitialized)
+            CreateChunk();
     }
 
-    public void BakeChunk()
+    public void CreateChunk()
     {
         //if (isInitialized)
             GenerateMesh();
@@ -257,7 +258,7 @@ public class ChunkGenerator : MonoBehaviour
                     // Check the neighbors
                     else
                     {
-                        // Avoid corners TODO:
+                        // Avoid corners
                         if (x + y == -2 || x + y == width + height || x + y == height - 1 ||
                             x + z == -2 || x + z == width + height || x + z == height - 1 ||
                             y + z == -2 || y + z == width + height || y + z == height - 1) continue;
@@ -272,7 +273,7 @@ public class ChunkGenerator : MonoBehaviour
                             var ownTile = tileArray[0, y, z];
                             
                             if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(ownTile.type, Direction.right, x, ownTile.y, ownTile.z);
+                                DrawTileSurface(TileType.Grass, Direction.right, x, ownTile.y, ownTile.z);
                         }
                         else if (x >= width)
                         {
@@ -282,7 +283,7 @@ public class ChunkGenerator : MonoBehaviour
                             var ownTile = tileArray[width-1, y, z];
 
                             if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(ownTile.type, Direction.left, x, ownTile.y, ownTile.z);
+                                DrawTileSurface(TileType.Grass, Direction.left, x, ownTile.y, ownTile.z);
                         }
                         else if (y < 0)
                         {
@@ -303,7 +304,7 @@ public class ChunkGenerator : MonoBehaviour
                             var ownTile = tileArray[x, y, 0];
 
                             if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(ownTile.type, Direction.front, x, y, z);
+                                DrawTileSurface(TileType.Grass, Direction.front, x, y, z);
                         }
                         else if (z >= depth)
                         {
@@ -313,7 +314,7 @@ public class ChunkGenerator : MonoBehaviour
                             var ownTile = tileArray[x, y, depth -1];
 
                             if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                                DrawTileSurface(ownTile.type, Direction.back, x, y, z);
+                                DrawTileSurface(TileType.Grass, Direction.back, x, y, z);
                         }
                     }
                 }
@@ -323,7 +324,7 @@ public class ChunkGenerator : MonoBehaviour
         MeshFilter meshfilter = GetComponent<MeshFilter>();
         Mesh mesh = new Mesh();
         // Allows for lots of vertices.. :)
-        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt16;
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.uv = uv.ToArray();
