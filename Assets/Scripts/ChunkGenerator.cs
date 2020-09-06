@@ -113,7 +113,7 @@ public class ChunkGenerator : MonoBehaviour
     public void PrepareChunk()
     {
         chunkdata = Noise.GenerateNoiseMap(width, height, depth, Scale, Seed, Octaves, Persistance, Lucanarity, Offset);
-        //CreateCheeseDataset();
+
         vertices.Clear();
         triangles.Clear();
         uv.Clear();
@@ -159,11 +159,27 @@ public class ChunkGenerator : MonoBehaviour
     {
         float[,,] sample = new float[3, 2, 3];
 
-        sample[0, 0, 0] = 1f;
-        sample[2, 0, 0] = 1f;
-        sample[1, 0, 1] = 1f;
-        sample[0, 0, 2] = 1f;
-        sample[2, 0, 2] = 1f;
+        //sample[0, 0, 0] = 1f;
+        //sample[2, 0, 0] = 1f;
+        //sample[1, 0, 1] = 1f;
+        //sample[0, 0, 2] = 1f;
+        //sample[2, 0, 2] = 1f;
+
+        sample[1, 0, 0] = 1f;
+        sample[0, 0, 1] = 1f;
+        sample[2, 0, 1] = 1f;
+        sample[1, 0, 2] = 1f;
+
+        sample[0, 1, 0] = 1f;
+        sample[1, 1, 0] = 1f;
+        sample[2, 1, 0] = 1f;
+        sample[0, 1, 1] = 1f;
+        sample[1, 1, 1] = 1f;
+        sample[2, 1, 1] = 1f;
+        sample[0, 1, 2] = 1f;
+        sample[1, 1, 2] = 1f;
+        sample[2, 1, 2] = 1f;
+
 
         return sample;
     }
@@ -236,49 +252,37 @@ public class ChunkGenerator : MonoBehaviour
                         if (currentTile.IsTileSolid())
                             continue;
 
-                        DrawNeigbors(x, y, z);
+                        DrawNeighbors(x, y, z);
                     }
                     // Check the neighbors
                     else
                     {
-                        // Avoid corners TODO: test.. especially the greater than.
-                        //if (x + y == -2 || x + z == -2 || y + z == -2) continue;
-                        //if (x == -1 && y == -1) continue;
-                        //if (x == -1 && z == -1) continue;
-                        //if (y == -1 && z == -1) continue;
-                        if (x + y == -2 || x + y == width + height || x + y == height - 1) continue;
-                        if (x + z == -2 || x + z == width + height || x + z == height - 1) continue;
-                        if (y + z == -2 || y + z == width + height || y + z == height - 1) continue;
-                        //if (x + y > width -1 || x + z > width -1 || y + z > width -1) continue;
-
-                        Tile neighborTile = new Tile(TileType.Stone, 0, 0, 0);
-                        ChunkGenerator chunk = null;
-                        Direction dir = Direction.down;
+                        // Avoid corners TODO:
+                        if (x + y == -2 || x + y == width + height || x + y == height - 1 ||
+                            x + z == -2 || x + z == width + height || x + z == height - 1 ||
+                            y + z == -2 || y + z == width + height || y + z == height - 1) continue;
+                     
+                        ChunkGenerator chunk;
                         if (x < 0)
                         {
                             if (y == height || z == depth) continue;
                             chunk = neighborChunks[0];
                             if (chunk == null) continue;
+                            var neighborTile = chunk.tileArray[width - 1, y, z];
                             var ownTile = tileArray[0, y, z];
-                            neighborTile = chunk.tileArray[width -1, y, z];
                             
-                            //dir = Direction.left;
                             if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                            {
-                                //DrawTileSurface(TileType.Grass, Direction.down, x, y, z);
-                                DrawTileSurface(TileType.Grass, Direction.right, x, ownTile.y, ownTile.z);
-                            }
+                                DrawTileSurface(ownTile.type, Direction.right, x, ownTile.y, ownTile.z);
                         }
                         else if (x >= width)
                         {
                             chunk = neighborChunks[1];
                             if (chunk == null) continue;
-                            neighborTile = chunk.tileArray[0, y, z];
+                            var neighborTile = chunk.tileArray[0, y, z];
                             var ownTile = tileArray[width-1, y, z];
+
                             if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                            {
-                                DrawTileSurface(TileType.Grass, Direction.left, x, ownTile.y, ownTile.z);
-                            }
+                                DrawTileSurface(ownTile.type, Direction.left, x, ownTile.y, ownTile.z);
                         }
                         else if (y < 0)
                         {
@@ -295,41 +299,22 @@ public class ChunkGenerator : MonoBehaviour
                             chunk = neighborChunks[2];
                             if (chunk == null) continue;
 
-                            neighborTile = chunk.tileArray[x, y, depth -1];
-
+                            var neighborTile = chunk.tileArray[x, y, depth -1];
                             var ownTile = tileArray[x, y, 0];
-                            dir = Direction.right;
+
                             if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                            {
-                                DrawTileSurface(TileType.Grass, Direction.front, x, y, z);
-                                //var obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                                //obj.transform.parent = this.transform;
-                                //obj.transform.localPosition = new Vector3(ownTile.x, ownTile.y, ownTile.z);
-                            }
+                                DrawTileSurface(ownTile.type, Direction.front, x, y, z);
                         }
                         else if (z >= depth)
                         {
                             chunk = neighborChunks[3];
                             if (chunk == null) continue;
-                            neighborTile = chunk.tileArray[x, y, 0];
-
+                            var neighborTile = chunk.tileArray[x, y, 0];
                             var ownTile = tileArray[x, y, depth -1];
-                            dir = Direction.right;
-                            if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
-                            {
-                                DrawTileSurface(TileType.Grass, Direction.back, x, y, z);
-                                //DrawTileSurface(TileType.Grass, Direction.down, x, y, z);
-                                //var obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                                //obj.transform.parent = this.transform;
-                                //obj.transform.localPosition = new Vector3(ownTile.x, ownTile.y, ownTile.z);
-                            }
-                        }
-                        if (chunk == null || neighborTile.IsTileSolid())
-                            continue;
 
-                        //DrawTileSurface(x, y, z);
-                        //DrawTileSurface(TileType.Stone, Direction.down, x, y, z);
-                        //DrawNeighbor(x, y, z, dir);
+                            if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
+                                DrawTileSurface(ownTile.type, Direction.back, x, y, z);
+                        }
                     }
                 }
             }
@@ -356,7 +341,7 @@ public class ChunkGenerator : MonoBehaviour
     //    }
     //}
 
-    public void DrawNeigbors(int x, int y, int z)
+    public void DrawNeighbors(int x, int y, int z)
     {
         // Check all the neigbors
         for (int i = -1; i < 2; i += 2)
@@ -405,9 +390,6 @@ public class ChunkGenerator : MonoBehaviour
     public void DrawTileSurface(TileType type, Direction direction, int x, int y, int z)
     {
         Vector3 TilePivot = new Vector3(x, y, z);
-
-        
-        //vertices.Add(new Vector3(-0.5f, -0.5f, -0.5f) + TilePivot);
         int[] verts;
         int VerticeIndex = vertices.Count;
 
@@ -420,7 +402,6 @@ public class ChunkGenerator : MonoBehaviour
                 {
                     vertices.Add(CubeVertices[vert] + TilePivot);
                     normals.Add(Vector3.right);
-                    Debug.DrawRay(vertices[vertices.Count - 1], Vector3.right * 0.5f, Color.red);
                 }
                 break;
             case Direction.right:
@@ -430,7 +411,6 @@ public class ChunkGenerator : MonoBehaviour
                 {
                     vertices.Add(CubeVertices[vert] + TilePivot);
                     normals.Add(Vector3.left);
-                    Debug.DrawRay(vertices[vertices.Count - 1], Vector3.left * 0.5f, Color.yellow);
                 }
                 break;
             case Direction.down:
@@ -441,7 +421,6 @@ public class ChunkGenerator : MonoBehaviour
                 {
                     vertices.Add(CubeVertices[vert] + TilePivot);
                     normals.Add(Vector3.up);
-                    Debug.DrawRay(vertices[vertices.Count - 1], Vector3.up * 0.5f, Color.blue);
                 }
                 break;
             case Direction.up:
@@ -460,7 +439,6 @@ public class ChunkGenerator : MonoBehaviour
                 {
                     vertices.Add(CubeVertices[vert] + TilePivot);
                     normals.Add(Vector3.back);
-                    Debug.DrawRay(vertices[vertices.Count - 1], Vector3.back * 0.5f, Color.green);
                 }
                 break;
             case Direction.back:
@@ -470,7 +448,6 @@ public class ChunkGenerator : MonoBehaviour
                 {
                     vertices.Add(CubeVertices[vert] + TilePivot);
                     normals.Add(Vector3.forward);
-                    Debug.DrawRay(vertices[vertices.Count - 1], Vector3.forward * 0.5f, Color.black);
                 }
                 break;
         }
