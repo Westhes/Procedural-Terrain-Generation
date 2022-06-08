@@ -18,7 +18,7 @@ public class ChunkGenerator : MonoBehaviour
     private List<Vector3> normals = new List<Vector3>();
 
 
-    static Vector3[] CubeVertices = new Vector3[]
+    static readonly Vector3[] CubeVertices = new Vector3[]
     {
         // Clockwise square, starting from bottomleft
         new Vector3(-0.5f, -0.5f, -0.5f),// 0
@@ -240,32 +240,26 @@ public class ChunkGenerator : MonoBehaviour
     private void GenerateMesh()
     {
         // Height last
-        for (int y = -1; y < height +1; y++)
+        for (int y = 0; y < height; y++)
         {
             // Depth second
-            for (int z = -1; z < depth +1; z++)
+            for (int z = 0; z < depth; z++)
             {
                 // width first
-                for (int x = -1; x < width +1; x++)
+                for (int x = 0; x < width; x++)
                 {
-                    if (!(x == -1 || y == -1 || z == -1 ||
-                        x == width || y == height || z == depth))
-                    {
-                        var currentTile = tileArray[x, y, z];
+                    
+                    var currentTile = tileArray[x, y, z];
 
-                        if (currentTile.IsTileSolid())
-                            continue;
+                    if (currentTile.IsTileSolid())
+                        continue;
 
-                        DrawNeighbors(x, y, z);
-                    }
-                    // Check the neighbors
-                    else
-                    {
-                        ValidateNeighborChunk(x, y, z);
-                    }
+                    DrawNeighbors(x, y, z);
                 }
             }
         }
+
+        LoopEdges();
 
         MeshFilter meshfilter = GetComponent<MeshFilter>();
         Mesh mesh = new Mesh();
@@ -276,75 +270,78 @@ public class ChunkGenerator : MonoBehaviour
         mesh.uv = uv.ToArray();
         mesh.normals = normals.ToArray();
         meshfilter.sharedMesh = mesh;
-
     }
 
-    private void ValidateNeighborChunk(int x, int y, int z)
+    private void LoopEdges()
     {
-        // Avoid corners
-        if (x + y == -2 || x + y == width + height || x + y == height - 1 ||
-            x + z == -2 || x + z == width + height || x + z == height - 1 ||
-            y + z == -2 || y + z == width + height || y + z == height - 1) return;
-        
+        int x1 = width;
+        int x2 = -1;
+        for (int y = 0; y < height; y++)
+        {
+            for (int z = 0; z < depth; z++)
+            {
+                ValidateNeighborChunk(x1, y, z, Direction.left);
+                ValidateNeighborChunk(x2, y, z, Direction.right);
+            }
+        }
+        int z1 = depth;
+        int z2 = -1;
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                ValidateNeighborChunk(x, y, z1, Direction.back);
+                ValidateNeighborChunk(x, y, z2, Direction.front);
+            }
+        }
+        // TODO: Add chunks above
+        //int y1 = height;
+        //int y2 = -1;
+        //for (int z = 0; z < depth; z++)
+        //{
+        //    for (int x = 0; x < width; x++)
+        //    {
+        //        ValidateNeighborChunk(x, y1, z, Direction.down);
+        //        ValidateNeighborChunk(x, y2, z, Direction.up);
+        //    }
+        //}
+    }
+
+    private void ValidateNeighborChunk(int x, int y, int z, Direction dir)
+    {
         int neighborX = x;
         int neighborY = y;
         int neighborZ = z;
-        int ownX = x;
-        int ownY = y;
-        int ownZ = z;
-        bool bypass = false;
         ChunkGenerator chunk = null;
-        Direction dir = Direction.left;
-        if (x < 0)
+        Tile ownTile = new Tile();
+        switch (dir)
         {
-            if (y == height || z == depth) return;
-            chunk = neighborChunks[0];
-            neighborX = width -1;
-            ownX = 0;
-            dir = Direction.right;
-        }
-        else if (x >= width)
-        {
-            chunk = neighborChunks[1];
-            neighborX = 0;
-            ownX = width - 1;
+            case Direction.left:
+                neighborX = 0;
+                ownTile = tileArray[x - 1, y, z];
+                chunk = neighborChunks[1];
+                break;
+            case Direction.right:
+                neighborX = width - 1;
+                ownTile = tileArray[x + 1, y, z];
+                chunk = neighborChunks[0];
+                break;
+            case Direction.back:
+                neighborZ = 0;
+                chunk = neighborChunks[3];
+                ownTile = tileArray[x, y, z - 1];
+                break;
+            case Direction.front:
+                neighborZ = depth - 1;
+                chunk = neighborChunks[2];
+                ownTile = tileArray[x, y, z + 1];
+                break;
 
-            dir = Direction.left;
-        }
-        else if (y < 0)
-        {
-            // TODO, also expand the neigborChunks array to allow this
-            //dir = Direction.down;
-            //DrawTileSurface(TileType.Grass, dir, x, y, z);
-            return;
-        }
-        else if (y >= height)
-        {
-            // See comment above.
-            //dir = Direction.up;
-            //DrawTileSurface(TileType.Grass, dir, x, y, z);
-
-            return;
-        }
-        else if (z < 0)
-        {
-            chunk = neighborChunks[2];
-            neighborZ = depth - 1;
-            ownZ = 0;
-            dir = Direction.front;
-        }
-        else if (z >= depth)
-        {
-            chunk = neighborChunks[3];
-            neighborZ = 0;
-            ownZ = depth - 1;
-            dir = Direction.back;
+            // TODO: add UP, DOWN
         }
 
         if (chunk == null) return;
         var neighborTile = chunk.tileArray[neighborX, neighborY, neighborZ];
-        var ownTile = tileArray[ownX, ownY, ownZ];
-
         if (!neighborTile.IsTileSolid() && ownTile.IsTileSolid())
             DrawTileSurface(ownTile.type, dir, x, y, z);
     }
