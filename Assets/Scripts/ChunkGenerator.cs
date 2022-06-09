@@ -148,7 +148,7 @@ public class ChunkGenerator : MonoBehaviour
                 for (int x = 0; x < width; x++)
                 {
                     // Filter the types
-                    var tileType = chunkdata[x, y, z] > Modifier ? TileType.None : TileType.Stone;
+                    var tileType = chunkdata[x, y, z] > Modifier ? TileType.None : (UnityEngine.Random.value > 0.5f) ? TileType.Grass :  TileType.Stone;
                     tileArray[x,y,z] = new Tile(tileType, x,y,z);
                 }
             }
